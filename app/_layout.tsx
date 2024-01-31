@@ -18,8 +18,9 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
+    mon: require("../assets/fonts/Montserrat-SemiBold.ttf"),
     "mon-it": require("../assets/fonts/Montserrat-Italic-VariableFont_wght.ttf"),
-    mon: require("../assets/fonts/Montserrat-VariableFont_wght.ttf"),
+    "mon-light": require("../assets/fonts/Montserrat-VariableFont_wght.ttf"),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
