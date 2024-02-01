@@ -10,9 +10,49 @@ import { useWarmUpBrowser } from "@/hooks/useWarmUpBrowser";
 import { defaultStyles } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useOAuth } from "@clerk/clerk-expo";
+import { useRouter } from "expo-router";
+
+enum Stragy {
+  Google = "oauth_google",
+  Apple = "oauth_apple",
+  Facebook = "oauth_facebook",
+}
 
 const Page = () => {
   useWarmUpBrowser();
+
+  const router = useRouter();
+
+  const { startOAuthFlow: googleAuth } = useOAuth({
+    strategy: Stragy.Google,
+  });
+  const { startOAuthFlow: appleAuth } = useOAuth({
+    strategy: Stragy.Apple,
+  });
+  const { startOAuthFlow: facebookAuth } = useOAuth({
+    strategy: Stragy.Facebook,
+  });
+
+  const onSelectAuth = async (strategy: Stragy) => {
+    const selectAuth = {
+      [Stragy.Apple]: appleAuth,
+      [Stragy.Google]: googleAuth,
+      [Stragy.Facebook]: facebookAuth,
+    }[strategy];
+
+    try {
+      const { createdSessionId, setActive } = await selectAuth();
+      console.log(createdSessionId);
+
+      if (createdSessionId) {
+        setActive!({ session: createdSessionId });
+        router.back();
+      }
+    } catch (error) {
+      console.error("OAuth error", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -63,7 +103,10 @@ const Page = () => {
           ></Ionicons>
           <Text style={styles.btnOutlineText}>Continue with phone</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnOutline}>
+        <TouchableOpacity
+          style={styles.btnOutline}
+          onPress={() => onSelectAuth(Stragy.Apple)}
+        >
           <MaterialCommunityIcons
             style={defaultStyles.btnIcon}
             name="apple"
@@ -71,7 +114,10 @@ const Page = () => {
           ></MaterialCommunityIcons>
           <Text style={styles.btnOutlineText}>Continue with Apple</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnOutline}>
+        <TouchableOpacity
+          style={styles.btnOutline}
+          onPress={() => onSelectAuth(Stragy.Google)}
+        >
           <MaterialCommunityIcons
             style={defaultStyles.btnIcon}
             name="google"
@@ -79,7 +125,10 @@ const Page = () => {
           ></MaterialCommunityIcons>
           <Text style={styles.btnOutlineText}>Continue with Google</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnOutline}>
+        <TouchableOpacity
+          style={styles.btnOutline}
+          onPress={() => onSelectAuth(Stragy.Facebook)}
+        >
           <MaterialCommunityIcons
             style={defaultStyles.btnIcon}
             name="facebook"
