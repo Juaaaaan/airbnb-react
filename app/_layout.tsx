@@ -98,7 +98,7 @@ function RootLayoutNav() {
       ></Stack.Screen>
       <Stack.Screen
         name="listing/[id]"
-        options={{ headerTitle: "" }}
+        options={{ headerTitle: "", headerTransparent: true }}
       ></Stack.Screen>
       <Stack.Screen
         name="(modals)/booking"
@@ -107,7 +107,7 @@ function RootLayoutNav() {
           animation: "fade",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="close-outline" size={28}></Ionicons>
+              <Ionicons name="close-outline" size={28} />
             </TouchableOpacity>
           ),
         }}
