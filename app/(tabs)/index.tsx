@@ -4,7 +4,9 @@ import { Stack } from "expo-router";
 import ExploreHeader from "@/components/exploreHeader";
 import Listings from "@/components/listings";
 
-import listingData from "@/assets/mocks/listings/airbnb-listings.json";
+import listingData from "@/assets/mocks/listings/listings-airbnb.json";
+import listingDataGeo from "@/assets/mocks/listings/airbnb-listings.geo.json";
+import ListingsMaps from "@/components/listingsMaps";
 
 const Page = () => {
   const [category, setCategory] = useState("Tiny homes");
@@ -22,7 +24,8 @@ const Page = () => {
           ),
         }}
       ></Stack.Screen>
-      <Listings listings={items} category={category}></Listings>
+      {/* <Listings listings={items} category={category}></Listings> */}
+      <ListingsMaps listings={listingDataGeo} />
     </View>
   );
 };

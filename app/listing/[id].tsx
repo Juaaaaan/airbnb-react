@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import listingData from "@/assets/mocks/listings/airbnb-listings.json";
+import listingData from "@/assets/mocks/listings/airbnb-listings.geo.json";
 import Animated, {
   SlideInDown,
   interpolate,
@@ -26,16 +26,16 @@ const { width } = Dimensions.get("window");
 
 const Page = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const listing: Listing = (listingData as any[]).find(
-    (item) => item.id === id
-  );
+  const listing: Feature | undefined = (
+    listingData as ListingsGeo
+  ).features.find((item: Feature) => item.properties.id === id);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const sharedListing = async () => {
     try {
       await Share.share({
-        title: listing.name,
-        url: listing.listing_url,
+        title: listing?.properties.name,
+        url: listing?.properties.listing_url ?? "",
       });
     } catch (error) {
       console.log(error);
@@ -107,44 +107,48 @@ const Page = () => {
         scrollEventThrottle={2}
       >
         <Animated.Image
-          source={{ uri: listing.xl_picture_url }}
+          source={{ uri: listing?.properties.xl_picture_url }}
           style={[styles.image, imageAnimatedStyle]}
         />
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>{listing.name}</Text>
+          <Text style={styles.name}>{listing?.properties.name}</Text>
           <Text style={styles.location}>
-            {listing.room_type} in {listing.smart_location}
+            {listing?.properties.room_type} in{" "}
+            {listing?.properties.smart_location}
           </Text>
           <Text style={styles.rooms}>
-            {listing.guests_included} guests · {listing.bedrooms} bedrooms ·{" "}
-            {listing.beds} bed · {listing.bathrooms} bathrooms
+            {listing?.properties.guests_included} guests ·{" "}
+            {listing?.properties.bedrooms} bedrooms · {listing?.properties.beds}{" "}
+            bed · {listing?.properties.bathrooms} bathrooms
           </Text>
           <View style={{ flexDirection: "row", gap: 4 }}>
             <Ionicons name="star" size={16} />
             <Text style={styles.ratings}>
-              {listing.review_scores_rating / 20} · {listing.number_of_reviews}{" "}
-              reviews
+              {listing?.properties.review_scores_rating ?? 0 / 20} ·{" "}
+              {listing?.properties.number_of_reviews} reviews
             </Text>
           </View>
           <View style={styles.divider} />
 
           <View style={styles.hostView}>
             <Image
-              source={{ uri: listing.host_picture_url }}
+              source={{ uri: listing?.properties.host_picture_url }}
               style={styles.host}
             />
 
             <View>
               <Text style={{ fontWeight: "500", fontSize: 16 }}>
-                Hosted by {listing.host_name}
+                Hosted by {listing?.properties.host_name}
               </Text>
-              <Text>Host since {listing.host_since}</Text>
+              <Text>Host since {listing?.properties.host_since}</Text>
             </View>
           </View>
 
           <View style={styles.divider} />
 
-          <Text style={styles.description}>{listing.description}</Text>
+          <Text style={styles.description}>
+            {listing?.properties.description}
+          </Text>
         </View>
       </Animated.ScrollView>
       <Animated.View
@@ -159,7 +163,9 @@ const Page = () => {
           }}
         >
           <TouchableOpacity style={styles.footerText}>
-            <Text style={styles.footerPrice}>€ {listing.price}</Text>
+            <Text style={styles.footerPrice}>
+              € {listing?.properties.price}
+            </Text>
             <Text>/ Night</Text>
           </TouchableOpacity>
           <TouchableOpacity
