@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { defaultStyles } from "@/constants/Styles";
+import * as ImagePicker from "expo-image-picker";
 
 const Page = () => {
   const { signOut, isSignedIn } = useAuth();
@@ -42,7 +43,6 @@ const Page = () => {
   const onSaveUser = async () => {
     try {
       if (!firstName || !lastName) return;
-
       user?.update({
         firstName,
         lastName,
@@ -54,7 +54,21 @@ const Page = () => {
     }
   };
 
-  const onCaptureImage = async () => {};
+  const onCaptureImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.75,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      const base64 = `data:image/png;base64,${result.assets[0].base64}`;
+      user?.setProfileImage({
+        file: base64,
+      });
+    }
+  };
 
   const [refreshing, setRefreshing] = React.useState(false);
 
