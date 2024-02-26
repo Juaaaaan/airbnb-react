@@ -2,21 +2,21 @@ import { View } from "react-native";
 import React, { useMemo, useState } from "react";
 import { Stack } from "expo-router";
 import ExploreHeader from "@/components/exploreHeader";
-import Listings from "@/components/listings";
 
-import listingData from "@/assets/mocks/listings/listings-airbnb.json";
 import listingDataGeo from "@/assets/mocks/listings/airbnb-listings.geo.json";
 import ListingsMaps from "@/components/listingsMaps";
+import ListingsBottomSheet from "@/components/ListingsBottomSheet";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Page = () => {
   const [category, setCategory] = useState("Tiny homes");
-  const items = useMemo(() => listingData as any, []);
+  const items = useMemo(() => listingDataGeo as any, []);
   const onDataChanged = (category: string) => {
     setCategory(category);
   };
 
   return (
-    <View style={{ flex: 1, marginTop: 100 }}>
+    <View style={{ flex: 1, marginTop: 80 }}>
       <Stack.Screen
         options={{
           header: () => (
@@ -24,8 +24,13 @@ const Page = () => {
           ),
         }}
       ></Stack.Screen>
-      {/* <Listings listings={items} category={category}></Listings> */}
-      <ListingsMaps listings={listingDataGeo} />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ListingsMaps listings={listingDataGeo} />
+        <ListingsBottomSheet
+          listings={items}
+          category={category}
+        ></ListingsBottomSheet>
+      </GestureHandlerRootView>
     </View>
   );
 };

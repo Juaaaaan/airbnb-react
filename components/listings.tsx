@@ -12,17 +12,21 @@ import { defaultStyles } from "@/constants/Styles";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
+import {
+  BottomSheetFlatList,
+  BottomSheetFlatListMethods,
+} from "@gorhom/bottom-sheet";
 
 interface Props {
-  listings: any[];
+  listings: any;
   category: string;
+  refresh: number;
 }
 
-const Listings = ({ listings: items, category }: Props) => {
+const Listings = ({ listings: items, category, refresh }: Props) => {
   const [loading, setLoading] = useState(false);
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<BottomSheetFlatListMethods>(null);
   useEffect(() => {
-    console.log("Reload listings", items.length);
     setLoading(true);
 
     setTimeout(() => {
@@ -30,15 +34,24 @@ const Listings = ({ listings: items, category }: Props) => {
     }, 200);
   }, [category]);
 
-  const renderRow: ListRenderItem<Listing> = ({ item }) => (
-    <Link href={`/listing/${item.id}`} asChild>
+  useEffect(() => {
+    if (refresh) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+  }, [refresh]);
+
+  const renderRow: ListRenderItem<Feature> = ({ item }) => (
+    <Link href={`/listing/${item.properties.id}`} asChild>
       <TouchableOpacity>
         <Animated.View
           style={styles.listing}
           entering={FadeInRight}
           exiting={FadeOutLeft}
         >
-          <Image source={{ uri: item.medium_url }} style={styles.image}></Image>
+          <Image
+            source={{ uri: item.properties.medium_url }}
+            style={styles.image}
+          ></Image>
           <TouchableOpacity
             style={{ position: "absolute", right: 30, top: 30 }}
           >
@@ -47,17 +60,21 @@ const Listings = ({ listings: items, category }: Props) => {
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <Text style={{ fontSize: 16, fontFamily: "mon" }}>{item.name}</Text>
+            <Text style={{ fontSize: 16, fontFamily: "mon" }}>
+              {item.properties.name}
+            </Text>
             <View style={{ flexDirection: "row", gap: 4 }}>
               <Ionicons name="star" size={16}></Ionicons>
               <Text style={{ fontFamily: "mon" }}>
-                {item.review_scores_rating / 20}
+                {item.properties.review_scores_rating / 20}
               </Text>
             </View>
           </View>
-          <Text style={{ fontFamily: "mon-light" }}>{item.room_type}</Text>
+          <Text style={{ fontFamily: "mon-light" }}>
+            {item.properties.room_type}
+          </Text>
           <View style={{ flexDirection: "row", gap: 4 }}>
-            <Text style={{ fontFamily: "mon" }}>€ {item.price}</Text>
+            <Text style={{ fontFamily: "mon" }}>€ {item.properties.price}</Text>
             <Text style={{ fontFamily: "mon-light" }}>night</Text>
           </View>
         </Animated.View>
@@ -67,11 +84,23 @@ const Listings = ({ listings: items, category }: Props) => {
 
   return (
     <View style={defaultStyles.container}>
-      <FlatList
+      <BottomSheetFlatList
         renderItem={renderRow}
         ref={listRef}
         data={loading ? [] : items}
-      ></FlatList>
+        ListHeaderComponent={
+          <Text
+            style={{
+              fontFamily: "mon",
+              fontSize: 16,
+              textAlign: "center",
+              marginTop: 4,
+            }}
+          >
+            {items.length} Houses
+          </Text>
+        }
+      ></BottomSheetFlatList>
     </View>
   );
 };
