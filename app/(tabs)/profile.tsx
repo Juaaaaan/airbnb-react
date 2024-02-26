@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   Image,
+  TextInput,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/clerk-expo";
@@ -25,7 +26,7 @@ const Page = () => {
 
   const { user } = useUser();
   const [firstName, setFirstName] = useState(user?.firstName);
-  const [LastName, setLastName] = useState(user?.lastName);
+  const [lastName, setLastName] = useState(user?.lastName);
   const [email, setEmail] = useState(user?.emailAddresses[0].emailAddress);
 
   const [edit, setEdit] = useState(false);
@@ -38,7 +39,20 @@ const Page = () => {
     setEmail(user.emailAddresses[0].emailAddress);
   }, [user]);
 
-  const onSaveUser = async () => {};
+  const onSaveUser = async () => {
+    try {
+      if (!firstName || !lastName) return;
+
+      user?.update({
+        firstName,
+        lastName,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setEdit(false);
+    }
+  };
 
   const onCaptureImage = async () => {};
 
@@ -46,9 +60,10 @@ const Page = () => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    user
+      ?.reload()
+      .catch((err) => console.log(err))
+      .finally(() => setRefreshing(false));
   }, []);
 
   return (
@@ -75,6 +90,48 @@ const Page = () => {
                 style={styles.avatar}
               ></Image>
             </TouchableOpacity>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              {edit ? (
+                <View
+                  style={{ flexDirection: "row", gap: 8, alignItems: "center" }}
+                >
+                  <TextInput
+                    placeholder="First name"
+                    value={firstName || ""}
+                    onChangeText={setFirstName}
+                    style={[defaultStyles.inputField, { width: 100 }]}
+                  ></TextInput>
+                  <TextInput
+                    placeholder="Last name"
+                    value={lastName || ""}
+                    onChangeText={setLastName}
+                    style={[defaultStyles.inputField, { width: 100 }]}
+                  ></TextInput>
+                  <TouchableOpacity onPress={() => onSaveUser()}>
+                    <Ionicons
+                      name="checkmark-outline"
+                      size={24}
+                      color={Colors.dark}
+                    ></Ionicons>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.editRow}>
+                  <Text style={{ fontFamily: "mon", fontSize: 22 }}>
+                    {firstName} {lastName}
+                  </Text>
+                  <TouchableOpacity onPress={() => setEdit(true)}>
+                    <Ionicons
+                      name="create-outline"
+                      size={24}
+                      color={Colors.dark}
+                    ></Ionicons>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            <Text>{email}</Text>
+            <Text>Since {user.createdAt?.toLocaleDateString()}</Text>
           </View>
         )}
       </ScrollView>
@@ -118,6 +175,15 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    backgroundColor: Colors.grey,
+  },
+  editRow: {
+    flex: 1,
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
 });
 
